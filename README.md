@@ -25,7 +25,7 @@ number of files in the target directory). That means this script is *non-destruc
 recommend backing up your data prior to running this script anyways). File extensions are
 maintained, so if that can reveal something you'd like blinded you'll need to find some workaround.
 When you're done with your analysis, repeat the same call on the **original target directory**, and
-you'll be asked whether you want to unblind. Typing "yes" will rename the files in the `\_blinded`
+you'll be asked whether you want to unblind. Typing "yes" will rename the files in the "_blinded"
 directory to their original name but with the suffix "_processed" added before the extension. The
 intention here is that if your analysis requires changes to the files, you can merge these back in
 with the originals. **If you delete the key file, you will not be able to unblind the results (and
