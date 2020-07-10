@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+
+"""
+Original author: Thomas Kahn
+thomas.b.kahn@gmail.com
+"""
+
+import os
+import random
+import sys
+import shutil
+
+# Suffix to be appended to copy of folder with blinded names. Change as desired, but keep quotes around value!
+folder_suffix = '_blinded'
+
+# Suffix to be appended to original name of file after it is unblinded. Change as desired, but keep quotes around value!
+file_suffix = '_processed'
+
+try:
+  source = sys.argv[1]
+except IndexError:
+  print('Usage: $ /path/to/blinder /path/to/target_directory')
+  sys.exit()
+if source.endswith('/'):
+  source = source[:-1]
+
+dest = source+folder_suffix
+
+os.chdir(source)
+os.chdir('../')
+
+def blind(source, dest):
+  files = [f for f in os.listdir(source) if os.path.isfile(source+'/'+f)]
+  try:
+    files.remove('.DS_Store')
+  except ValueError:
+    pass
+  n_files  = len(files)
+  n_digits = len(str(n_files))
+  new_names = [str(i).zfill(n_digits) for i in range(n_files)]
+  random.shuffle(new_names)
+  key_appendage = source.split('/')[-1]
+  key_file = open(dest+'/key_'+key_appendage+'.txt', 'w')
+  for file_i, name in zip(files, new_names):
+    extension = file_i.split('.')[-1]
+    name += '.'+extension
+    key_file.write(name+'\t'+file_i+'\n')
+    shutil.copyfile(source+'/'+file_i, dest+'/'+name)
+  key_file.close()
+
+def unblind(folder, key_filename, file_suffix):
+  with open(folder+'/'+key_filename) as key_file:
+    lines = key_file.read().splitlines()
+    for line in lines:
+      name, original = line.split('\t')
+      prefix = '.'.join(original.split('.')[:-1])
+      extension = original.split('.')[-1]
+      try:
+        os.rename(folder+'/'+name, folder+'/'+prefix+file_suffix+'.'+extension)
+      except OSError:
+        pass
+
+try:
+  os.mkdir(dest)
+  blind(source,dest)
+except OSError:
+  pass
+  if input("""Blinded folder already exists! Type 'yes' to unblind\n""").lower() == 'yes':
+    key_filename = [f for f in os.listdir(dest) if f.startswith('key')][0]
+    unblind(dest, key_filename, file_suffix)
+  else:
+    sys.exit()
+
+
